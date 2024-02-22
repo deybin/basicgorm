@@ -9,35 +9,52 @@ import (
 Las etiquetas de structure o también llamado etiquetas de campo estos metadatos serán los siguientes según el tipo de dato:
 
 	Type data All
-	json: string => nombre de la key que se pondrá al generar el json
-	description: string => descripción del campo
+	Name: string => nombre del campo
+	Description: string => descripción del campo
+	Type: DataType => a bajo nivel es un string donde se especifica de que tipo sera el campo
 
-	Type data string
-		LowerCase: bool => convierte en minúscula el valor del campo
-		UpperCase: bool => convierte en mayúscula el valor del campo
-		Encriptar: bool => crea un hash del valor del campo
-		Cifrar: bool => cifra el valor del campo
-		Date: bool => verifica que el valor del campo sea una fecha valida con formato dd/mm/yyyy
-		Min: int => cuantos caracteres como mínimo debe de tener el valor del campo
-		Max: int => cuantos caracteres como máximo debe de tener el valor del campo
-		Expr: *regexp.Regexp => expresión regular que debe cumplir el valor que almacenara el campo
+Required: bool => si el valor para inserción de este campo es requerido o no
+PrimaryKey: bool => si el campo es primary key entonces es obligatorio este campo para insert,update y delete
+Where: bool => si el campo puede ser utilizado para filtrar al utilizar el update y delete
+Update: bool => si el campo puede ser modificado.
+Default: interface{} => calor por defecto que se tomara si no se le valor al campo, el tipo del valor debe de ser igual al Type del campo.
+Empty: bool => el campo aceptara valor vació si se realiza la actualización.
+ValidateType: interface{} => los datos seran validados mas a fondo mediante esta opción para eso se le debe de asignar los sguientes typo de struct:
 
-	Type data float64
-		Porcentaje: bool => convierte el valor del campo en porcentaje
-		Negativo: bool => el campo aceptara valores negativos
-		Menor: float64 => los valores que aceptaran tienen que ser menores o igual que este metadato
-		Mayor: float64 => los valores que aceptaran tienen que ser mayores o igual  que este metadato
+  - TypeStrings
 
-	Type data uint64
-		Max: uint64 => hasta que valor aceptara que se almacene en este campo
+  - TypeFloat64
 
-	Type data int64
-		Max: uint64 => hasta que valor aceptara que se almacene en este campo
-		Min: uint64 => valor como mínimo  aceptara que se almacene en este campo
-		Negativo: bool => el campo aceptara valores negativos
+  - TypeUint64
+
+  - TypeInt64
+
+    Type data string
+    LowerCase: bool => convierte en minúscula el valor del campo
+    UpperCase: bool => convierte en mayúscula el valor del campo
+    Encriptar: bool => crea un hash del valor del campo
+    Cifrar: bool => cifra el valor del campo
+    Date: bool => verifica que el valor del campo sea una fecha valida con formato dd/mm/yyyy
+    Min: int => cuantos caracteres como mínimo debe de tener el valor del campo
+    Max: int => cuantos caracteres como máximo debe de tener el valor del campo
+    Expr: *regexp.Regexp => expresión regular que debe cumplir el valor que almacenara el campo
+
+    Type data float64
+    Porcentaje: bool => convierte el valor del campo en porcentaje
+    Negativo: bool => el campo aceptara valores negativos
+    Menor: float64 => los valores que aceptaran tienen que ser menores o igual que este metadato
+    Mayor: float64 => los valores que aceptaran tienen que ser mayores o igual  que este metadato
+
+    Type data uint64
+    Max: uint64 => hasta que valor aceptara que se almacene en este campo
+
+    Type data int64
+    Max: uint64 => hasta que valor aceptara que se almacene en este campo
+    Min: uint64 => valor como mínimo  aceptara que se almacene en este campo
+    Negativo: bool => el campo aceptara valores negativos
 */
 type (
-	// DataType GORM data type
+	// DataType basicGORM data type
 	DataType string
 )
 
