@@ -61,4 +61,4 @@ func main() {
 ## Licencia
 © Deybin, 2024~time.Now
 
-Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](https://github.com/deybin/basicgorm/master/LICENSE) para más detalles.
+Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](https://github.com/deybin/basicgorm/LICENSE) para más detalles.
