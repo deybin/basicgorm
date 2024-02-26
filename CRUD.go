@@ -17,7 +17,7 @@ type SqlExecSingle struct {
 	ob     []map[string]interface{} //datos para observación
 	data   []map[string]interface{} //datos para insertar o actualizar o eliminar
 	query  []map[string]interface{}
-	table  string
+	schema Schema
 	action string
 }
 
@@ -31,29 +31,34 @@ type Transaction struct {
 	ob     []map[string]interface{} //datos para observación
 	data   []map[string]interface{} //datos para insertar o actualizar o eliminar
 	query  []map[string]interface{}
-	table  string
+	schema Schema
 	action string
 }
 
-/**
- * Reception datos para crear query para insertar, actualizar o eliminar
- * datos {[]map[string]interface{}}: datos a insertar, actualizar o eliminar
- * name {string}: nombre de la tabla
- * returns {*SqlExec} retorna SqlExec struct
- */
-func (sq *SqlExecSingle) New(table string, datos ...map[string]interface{}) *SqlExecSingle {
+/*
+New crea una nueva instancia de SqlExecSingle con el esquema y los datos proporcionados.
+
+	Parámetros
+		* s {Schema}: esquema de la tabla
+		* datos {[]map[string]interface{}}: datos a insertar, actualizar o eliminar
+
+	Return
+		- (*SqlExecSingle) retorna  puntero *SqlExecSingle struct
+*/
+func (sq *SqlExecSingle) New(s Schema, datos ...map[string]interface{}) *SqlExecSingle {
 	sq.ob = datos
-	sq.table = table
+	sq.schema = s
 	return sq
 }
 
-/**
- * Valida los datos para insertar y crea el query para insertar
- * schema {[]Fields}: modelo de la tabla
- * returns {error}: retorna errores ocurridos en la validación
- */
-func (sq *SqlExecSingle) Insert(schema []Fields) error {
-	sqlExec, data_insert, err := _insert(sq.table, sq.ob, schema)
+/*
+Valida los datos para insertar y crea el query para insertar
+
+	Return
+		- (error): retorna errores ocurridos en la validación
+*/
+func (sq *SqlExecSingle) Insert() error {
+	sqlExec, data_insert, err := _insert(sq.schema.GetTableName(), sq.ob, sq.schema.GetSchemaInsert())
 	if err != nil {
 		return err
 	}
@@ -63,13 +68,14 @@ func (sq *SqlExecSingle) Insert(schema []Fields) error {
 	return nil
 }
 
-/**
- * Valida los datos para actualizar y crea el query para actualizar
- * schema {[]Model}: modelo de la tabla
- * returns {error}: retorna errores ocurridos en la validación
- */
-func (sq *SqlExecSingle) Update(schema []Fields) error {
-	sqlExec, data_update, err := _update(sq.table, sq.ob, schema)
+/*
+Valida los datos para actualizar y crea el query para actualizar
+
+	Return
+		- (error): retorna errores ocurridos en la validación
+*/
+func (sq *SqlExecSingle) Update() error {
+	sqlExec, data_update, err := _update(sq.schema.GetTableName(), sq.ob, sq.schema.GetSchemaUpdate())
 	if err != nil {
 		return err
 	}
@@ -79,13 +85,14 @@ func (sq *SqlExecSingle) Update(schema []Fields) error {
 	return nil
 }
 
-/**
- * Valida los datos para Eliminar y crea el query para Eliminar
- * schema {[]Model}: modelo de la tabla
- * returns {error}: retorna errores ocurridos en la validación
- */
-func (sq *SqlExecSingle) Delete(schema []Fields) error {
-	sqlExec, data_delete, err := _delete(sq.table, sq.ob, schema)
+/*
+Valida los datos para Eliminar y crea el query para Eliminar
+
+	Return
+		- (error): retorna errores ocurridos en la validación
+*/
+func (sq *SqlExecSingle) Delete() error {
+	sqlExec, data_delete, err := _delete(sq.schema.GetTableName(), sq.ob, sq.schema.GetSchemaDelete())
 	if err != nil {
 		return err
 	}
@@ -95,10 +102,22 @@ func (sq *SqlExecSingle) Delete(schema []Fields) error {
 	return nil
 }
 
-/**
- * Ejecuta el query
- * returns {error}: retorna errores ocurridos durante la ejecución
- */
+/*
+Retorna los datos que se enviaron o enviaran para ser insertados, modificados o eliminados
+
+	Return
+		- []map[string]interface{}
+*/
+func (sq *SqlExecSingle) GetData() []map[string]interface{} {
+	return sq.data
+}
+
+/*
+Ejecuta el query
+
+	Return
+		- returns {error}: retorna errores ocurridos durante la ejecución
+*/
 func (sq *SqlExecSingle) Exec(database string, params ...bool) error {
 	cnn, err := Connection(database)
 	if err != nil {
@@ -136,37 +155,47 @@ func (sq *SqlExecSingle) Exec(database string, params ...bool) error {
 	return nil
 }
 
-/**
- * Reception datos para crear query para insertar, actualizar o eliminar
- * datos {[]map[string]interface{}}: datos a insertar, actualizar o eliminar
- * name {string}: nombre de la tabla
- * returns {*SqlExec} retorna SqlExec struct
- */
+/*
+Crea una nueva instancia de SqlExecMultiple con el nombre de la base de datos proporcionado.
+
+	Parámetros
+	  * name {string}: database
+	Return
+	  - (*SqlExecMultiple) retorna  puntero *SqlExecMultiple struct
+*/
 func (sq *SqlExecMultiple) New(database string) *SqlExecMultiple {
 	sq.database = database
 	sq.transaction = make(map[string]*Transaction)
 	return sq
 }
 
-/**
- * Reception datos para crear query para insertar, actualizar o eliminar
- * datos {[]map[string]interface{}}: datos a insertar, actualizar o eliminar
- * name {string}: nombre de la tabla
- * returns {*SqlExec} retorna SqlExec struct
- */
-func (sq *SqlExecMultiple) SetInfo(table string, datos ...map[string]interface{}) *Transaction {
+/*
+SetInfo establece la información para una nueva transacción en SqlExecMultiple.
+
+	Recibe un esquema (s Schema) y datos (datos ...map[string]interface{}) para la transacción.
+	Retorna un puntero a la transacción creada.
+	Parámetros
+		* s {Schema}: esquema de la tabla
+		* datos {[]map[string]interface{}}: datos a insertar, actualizar o eliminar
+	Return
+		- (*Transaction) retorna puntero *Transaction
+*/
+func (sq *SqlExecMultiple) SetInfo(s Schema, datos ...map[string]interface{}) *Transaction {
 	key := uuid.New().String()
 	sq.transaction[key] = &Transaction{
-		ob:    datos,
-		table: table,
+		ob:     datos,
+		schema: s,
 	}
 	return sq.transaction[key]
 }
 
-/**
- * Ejecuta el query
- * returns {error}: retorna errores ocurridos durante la ejecución
- */
+/*
+*
+Ejecuta el query
+
+	Return
+		- (error): retorna errores ocurridos durante la ejecución
+*/
 func (sq *SqlExecMultiple) Exec(params ...bool) error {
 	cnn, err := Connection(sq.database)
 	if err != nil {
@@ -215,8 +244,8 @@ func (sq *SqlExecMultiple) Exec(params ...bool) error {
 	return nil
 }
 
-func (t *Transaction) Insert(schema []Fields) error {
-	sqlExec, data_insert, err := _insert(t.table, t.ob, schema)
+func (t *Transaction) Insert() error {
+	sqlExec, data_insert, err := _insert(t.schema.GetTableName(), t.ob, t.schema.GetSchemaInsert())
 	if err != nil {
 		return err
 	}
@@ -226,8 +255,8 @@ func (t *Transaction) Insert(schema []Fields) error {
 	return nil
 }
 
-func (t *Transaction) Update(schema []Fields) error {
-	sqlExec, data_update, err := _update(t.table, t.ob, schema)
+func (t *Transaction) Update() error {
+	sqlExec, data_update, err := _update(t.schema.GetTableName(), t.ob, t.schema.GetSchemaUpdate())
 	if err != nil {
 		return err
 	}
@@ -237,8 +266,8 @@ func (t *Transaction) Update(schema []Fields) error {
 	return nil
 }
 
-func (t *Transaction) Delete(schema []Fields) error {
-	sqlExec, data_delete, err := _delete(t.table, t.ob, schema)
+func (t *Transaction) Delete() error {
+	sqlExec, data_delete, err := _delete(t.schema.GetTableName(), t.ob, t.schema.GetSchemaDelete())
 	if err != nil {
 		return err
 	}
@@ -246,6 +275,10 @@ func (t *Transaction) Delete(schema []Fields) error {
 	t.data = data_delete
 	t.action = "DELETE"
 	return nil
+}
+
+func (t *Transaction) GetData() []map[string]interface{} {
+	return t.data
 }
 
 func (sq *SqlExecMultiple) ExecTransaction(t *Transaction) error {

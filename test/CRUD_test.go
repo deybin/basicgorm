@@ -11,11 +11,33 @@ func TestCRUD_Single(t *testing.T) {
 	dataInsert := map[string]interface{}{
 		"c_sucu": "003",
 		"l_sucu": "sucursal de prueba",
+		"l_dire": "sin información",
 	}
-	schema, tableName := table.GetSucursal()
+
 	crud := basicgorm.SqlExecSingle{}
 
-	err := crud.New(tableName, dataInsert).Insert(schema)
+	err := crud.New(new(table.Sucursal).New(), dataInsert).Insert()
+	if err != nil {
+		t.Errorf("se esperaba este error: %s", err.Error())
+		return
+	}
+
+	err = crud.Exec("new_capital")
+	if err != nil {
+		t.Errorf("se esperaba este error: %s", err.Error())
+		return
+	}
+
+}
+
+func TestCRUD_Single_Update(t *testing.T) {
+	dataInsert := map[string]interface{}{
+		"l_alma": "principal",
+		"where":  map[string]interface{}{"c_sucu": "001", "c_alma": "002"},
+	}
+
+	crud := basicgorm.SqlExecSingle{}
+	err := crud.New(new(table.Store).New(), dataInsert).Update()
 	if err != nil {
 		t.Errorf("se esperaba este error: %s", err.Error())
 		return
@@ -33,15 +55,18 @@ func TestCRUD_Multiple(t *testing.T) {
 	dataInsert := append([]map[string]interface{}{}, map[string]interface{}{
 		"c_sucu": "004",
 		"l_sucu": "sucursal de prueba",
+		"l_dire": "sin información",
 	})
 	dataInsert = append(dataInsert, map[string]interface{}{
 		"c_sucu": "005",
 		"l_sucu": "sucursal de prueba",
+		"l_dire": "sin información",
 	})
-	dataInsert = append(dataInsert, map[string]interface{}{
-		"c_sucu": "003",
-		"l_sucu": "sucursal de prueba",
-	})
+	// dataInsert = append(dataInsert, map[string]interface{}{
+	// 	"c_sucu": "003",
+	// 	"l_sucu": "sucursal de prueba",
+	// 	"l_dire": "sin información",
+	// })
 
 	dataInsertAlma := append([]map[string]interface{}{}, map[string]interface{}{
 		"c_sucu": "004",
@@ -49,19 +74,17 @@ func TestCRUD_Multiple(t *testing.T) {
 		"l_alma": "sucursal de prueba",
 	})
 
-	schema, tableName := table.GetSucursal()
-	schemaAlma, tableNameAlma := table.GetAlmacen()
 	crud := basicgorm.SqlExecMultiple{}
 	crud.New("new_capital")
 
-	trAlmacen := crud.SetInfo(tableNameAlma, dataInsertAlma...)
-	trSucursal := crud.SetInfo(tableName, dataInsert...)
-	err := trAlmacen.Insert(schemaAlma)
+	trSucursal := crud.SetInfo(new(table.Sucursal).New(), dataInsert...)
+	trAlmacen := crud.SetInfo(new(table.Store).New(), dataInsertAlma...)
+	err := trAlmacen.Insert()
 	if err != nil {
 		t.Errorf("se esperaba este error: %s", err.Error())
 		return
 	}
-	err = trSucursal.Insert(schema)
+	err = trSucursal.Insert()
 	if err != nil {
 		t.Errorf("se esperaba este error: %s", err.Error())
 		return
@@ -79,15 +102,18 @@ func TestCRUD_Multiple_transaction(t *testing.T) {
 	dataInsert := append([]map[string]interface{}{}, map[string]interface{}{
 		"c_sucu": "004",
 		"l_sucu": "sucursal de prueba",
+		"l_dire": "indefinido",
 	})
 	dataInsert = append(dataInsert, map[string]interface{}{
 		"c_sucu": "005",
 		"l_sucu": "sucursal de prueba",
+		"l_dire": "indefinido",
 	})
-	dataInsert = append(dataInsert, map[string]interface{}{
-		"c_sucu": "003",
-		"l_sucu": "sucursal de prueba",
-	})
+	// dataInsert = append(dataInsert, map[string]interface{}{
+	// 	"c_sucu": "003",
+	// 	"l_sucu": "sucursal de prueba",
+	// 	"l_dire": "indefinido",
+	// })
 
 	dataInsertAlma := append([]map[string]interface{}{}, map[string]interface{}{
 		"c_sucu": "004",
@@ -95,18 +121,18 @@ func TestCRUD_Multiple_transaction(t *testing.T) {
 		"l_alma": "sucursal de prueba",
 	})
 
-	schema, tableName := table.GetSucursal()
-	schemaAlma, tableNameAlma := table.GetAlmacen()
+	// schema, tableName := table.GetSucursal()
+	// schemaAlma, tableNameAlma := table.GetAlmacen()
 	crud := new(basicgorm.SqlExecMultiple).New("new_capital")
-	TransactionAlmacen := crud.New("new_capital").SetInfo(tableNameAlma, dataInsertAlma...)
-	TransactionSucursal := crud.SetInfo(tableName, dataInsert...)
+	TransactionAlmacen := crud.New("new_capital").SetInfo(new(table.Store).New(), dataInsertAlma...)
+	TransactionSucursal := crud.SetInfo(new(table.Sucursal).New(), dataInsert...)
 
-	err := TransactionAlmacen.Insert(schemaAlma)
+	err := TransactionAlmacen.Insert()
 	if err != nil {
 		t.Errorf("se esperaba este error: %s", err.Error())
 		return
 	}
-	err = TransactionSucursal.Insert(schema)
+	err = TransactionSucursal.Insert()
 	if err != nil {
 		t.Errorf("se esperaba este error: %s", err.Error())
 		return

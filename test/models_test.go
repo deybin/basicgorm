@@ -9,9 +9,9 @@ import (
 
 func TestModels(t *testing.T) {
 
-	sucursal, _ := table.GetSucursal()
+	sucursal := new(table.Sucursal).New()
 
-	fmt.Println(string(sucursal[0].Type))
+	fmt.Println(string(sucursal.GetTableName()))
 
 	r := ""
 
