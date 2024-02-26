@@ -127,6 +127,11 @@ func (q *Querys) SetQueryString(query string, arg interface{}) *Querys {
 	return q
 }
 
+func (q *Querys) SetTable(table string) *Querys {
+	q.Table = table
+	return q
+}
+
 /*
 *
 Select establece la cláusula SELECT de la consulta SQL.
