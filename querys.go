@@ -210,7 +210,8 @@ Devuelve:
   - Un puntero al struct Querys actualizado para permitir el encadenamiento de métodos.
 */
 func (q *Querys) Where(where string, op OperatorWhere, arg interface{}) *Querys {
-	q.argsLen++
+	q.argsLen = 1
+	q.args = []interface{}{}
 	argString, err := getSintaxisFilter(q, op, arg)
 	if err != nil {
 		fmt.Println(err)
@@ -471,7 +472,7 @@ func (q *Querys) ExecTx() *Querys {
 	}
 
 	err := q.db.PingContext(q.ctx)
-	defer q.db.Close()
+	// defer q.db.Close()
 	if err != nil {
 		q.err = err
 		fmt.Println("Error SQL ping:", err.Error())
@@ -495,13 +496,16 @@ func (q *Querys) ExecTx() *Querys {
 
 func (q *Querys) ResetQuery() {
 	q.query = sintaxis{}
+	q.argsLen = 0
+	q.args = []interface{}{}
 }
 
 func (q *Querys) SetNewArgs(arg ...interface{}) error {
 	if len(arg) != q.argsLen {
 		return fmt.Errorf("parámetros enviados (%d), requeridos (%d)", len(arg), q.argsLen)
 	}
-	q.args = arg
+	q.args = []interface{}{}
+	q.args = append(q.args, arg...)
 	return nil
 }
 

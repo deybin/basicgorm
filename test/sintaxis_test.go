@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/deybin/basicgorm"
 )
@@ -236,5 +237,29 @@ func TestQueryStringFull_plpgsql(t *testing.T) {
 	result := []map[string]interface{}{}
 	if len(result) != 0 {
 		t.Errorf("Se esperaba: %v, pero se obtuvo %v", result, "")
+	}
+}
+
+func TestSintaxisContexto(t *testing.T) {
+	query := new(basicgorm.Querys).SetTable("requ_clientes").Connect(basicgorm.QConfig{Database: "documentos"})
+	query.Select("docs")
+	rs := []map[string]interface{}{}
+	arr := []string{"00001", "00002", "00003", "00004", "00005", "00006", "00007"}
+	for i := 0; i < len(arr); i++ {
+		query.ResetQuery()
+		r, err := query.Select("docs").Where("docs", basicgorm.I, arr[i]).ExecTx().All()
+		fmt.Println("test query:", query.GetQuery())
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(r)
+		time.Sleep(1 * time.Second)
+	}
+	fmt.Println("no se cierra aun la conexión")
+	time.Sleep(10 * time.Second)
+	query.Close()
+	result := []map[string]interface{}{}
+	if len(result) != 0 {
+		t.Errorf("Se esperaba: %v, pero se obtuvo %v", result, rs)
 	}
 }
