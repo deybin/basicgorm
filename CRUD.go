@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,7 +23,7 @@ type SqlExecSingle struct {
 type SqlExecMultiple struct {
 	tx          *sql.Tx
 	database    string
-	transaction map[string]*Transaction
+	transaction []*Transaction
 }
 
 type Transaction struct {
@@ -165,7 +164,7 @@ Crea una nueva instancia de SqlExecMultiple con el nombre de la base de datos pr
 */
 func (sq *SqlExecMultiple) New(database string) *SqlExecMultiple {
 	sq.database = database
-	sq.transaction = make(map[string]*Transaction)
+	// sq.transaction = make(map[string]*Transaction)
 	return sq
 }
 
@@ -181,11 +180,12 @@ SetInfo establece la información para una nueva transacción en SqlExecMultiple
 		- (*Transaction) retorna puntero *Transaction
 */
 func (sq *SqlExecMultiple) SetInfo(s Schema, datos ...map[string]interface{}) *Transaction {
-	key := uuid.New().String()
-	sq.transaction[key] = &Transaction{
+	key := len(sq.transaction)
+	sq.transaction = append(sq.transaction, &Transaction{
 		ob:     datos,
 		schema: s,
-	}
+	})
+
 	return sq.transaction[key]
 }
 
@@ -684,7 +684,7 @@ func caseFloat(value float64, schema TypeFloat64) (float64, error) {
 	if !schema.Negativo {
 		if value < float64(0) {
 			err_cont++
-			error += fmt.Sprintf("- No puede ser negativo")
+			error += fmt.Sprintf("- no puede ser negativo")
 		}
 	}
 	if schema.Porcentaje {
@@ -728,8 +728,7 @@ func caseInt(value int64, schema TypeInt64) (int64, error) {
 func caseUint(value uint64, schema TypeUint64) (uint64, error) {
 	if schema.Max > 0 {
 		if value > schema.Max {
-			error := fmt.Sprintf("- No esta en el rango permitido")
-			return 0, errors.New(error)
+			return 0, errors.New("- no esta en el rango permitido")
 		}
 	}
 	return value, nil

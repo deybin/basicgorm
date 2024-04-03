@@ -109,11 +109,11 @@ func TestCRUD_Multiple_transaction(t *testing.T) {
 		"l_sucu": "sucursal de prueba",
 		"l_dire": "indefinido",
 	})
-	// dataInsert = append(dataInsert, map[string]interface{}{
-	// 	"c_sucu": "003",
-	// 	"l_sucu": "sucursal de prueba",
-	// 	"l_dire": "indefinido",
-	// })
+	dataInsert = append(dataInsert, map[string]interface{}{
+		"c_sucu": "003",
+		"l_sucu": "sucursal de prueba",
+		"l_dire": "indefinido",
+	})
 
 	dataInsertAlma := append([]map[string]interface{}{}, map[string]interface{}{
 		"c_sucu": "004",
