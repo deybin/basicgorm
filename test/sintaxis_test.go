@@ -187,7 +187,7 @@ func TestQueryStringFull(t *testing.T) {
 	Query := basicgorm.Querys{
 		Table: "requ_clientes as a",
 	}
-	r, err := Query.SetQueryString("SELECT a.n_docu,b.l_nomb FROM requ_clientes as a INNER JOIN  fina_clientes as b ON a.n_docu=b.n_docu WHERE a.c_ubig = $1 AND a.n_docu IN ($2,$3,$4) ORDER BY a.n_docu desc LIMIT 2", []interface{}{"120119", "47727049", "20060977", "43198110"}).Exec(basicgorm.QConfig{Database: "new_capital"}).All()
+	r, err := Query.SetQueryString("SELECT a.n_docu,b.l_nomb FROM requ_clientes as a INNER JOIN  fina_clientes as b ON a.n_docu=b.n_docu WHERE a.c_ubig = $1 AND a.n_docu IN ($2,$3,$4) ORDER BY a.n_docu desc LIMIT 2", "120119", "47727049", "20060977", "43198110").Exec(basicgorm.QConfig{Database: "new_capital"}).All()
 	fmt.Println("test query:", Query.GetQuery())
 
 	if err != nil {

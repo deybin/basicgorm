@@ -112,17 +112,13 @@ Parámetros:
 Devuelve:
   - Una referencia al struct Querys actualizado con la consulta SQL y sus argumentos.
 */
-func (q *Querys) SetQueryString(query string, arg interface{}) *Querys {
+func (q *Querys) SetQueryString(query string, arg ...interface{}) *Querys {
 	q.query.workQueryFull = true
 	q.query.queryFull = query
 	if arg == nil {
 		return q
 	}
-	if reflect.TypeOf(arg).String() == "[]interface {}" {
-		q.args = append(q.args, arg.([]interface{})...)
-	} else {
-		q.args = append(q.args, arg)
-	}
+	q.args = append(q.args, arg...)
 
 	return q
 }
