@@ -2,7 +2,7 @@
 Este proyecto es una librería para construir y ejecutar consultas SQL de forma dinámica utilizando Golang.
 
 ## Descripción
-BasicGORM es un paquete en Go diseñado para facilitar la interacción con bases de datos SQL utilizando el paquete database/sql. Además de ejecutar consultas SQL de forma programática utilizando métodos encadenados para establecer diferentes partes de la consulta, como la cláusula SELECT, WHERE, JOIN, ORDER BY, etc., BasicGORM proporciona funciones para validar los datos antes de realizar operaciones de inserción, actualización y eliminación en la base de datos
+BasicGORM es un paquete en Go diseñado para facilitar la interacción con bases de datos SQL utilizando el paquete database/sql. Además de ejecutar consultas SQL de forma programática utilizando métodos encadenados para establecer diferentes partes de la consulta, como la cláusula SELECT, WHERE, JOIN, ORDER BY, etc., BasicGORM proporciona funciones para validar los datos antes de realizar operaciones de inserción, actualización y eliminación en la base de datos.
 
 
 ## Características
