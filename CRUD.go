@@ -190,6 +190,70 @@ func (sq *SqlExecMultiple) SetInfo(s Schema, datos ...map[string]interface{}) *T
 }
 
 /*
+SetTransaction establece la información para nuevas transacciones, recibiendo directamente nuevas transacciones ya procesadas.
+
+	Recibe uno o varias transacciones (s ...*Transaction) listas  para  ser ejecutadas.
+	Retorna un array de  punteros a la transacción creadas.
+	Parámetros
+		* s {...*Transaction}: array de transacciones ya procesadas, listas para su ejecución
+	Return
+		- ([]*Transaction) retorna  []*Transaction
+*/
+func (sq *SqlExecMultiple) SetTransaction(s ...*Transaction) ([]*Transaction, error) {
+	key := len(sq.transaction)
+	var returned []*Transaction
+	for _, v := range s {
+		sq.transaction = append(sq.transaction, v)
+		returned = append(returned, sq.transaction[key])
+		key++
+	}
+	if len(returned) <= 0 {
+		return nil, errors.New("se recibió datos sin ser procesados")
+	}
+	return returned, nil
+}
+
+/*
+GetTransaction retorna las transacciones ya procesadas.
+
+	Return
+		- ([]*Transaction) retorna  []*Transaction
+*/
+func (sq *SqlExecMultiple) GetTransactions() []*Transaction {
+	var returned []*Transaction
+	for _, v := range sq.transaction {
+		if v.action != "" {
+			returned = append(returned, v)
+		}
+	}
+	return returned
+}
+
+/*
+SetSqlSingle establece la información de un SqlExecSingle para crear una nueva Transaction, los datos del .SqlExecSingle ya deben estar procesados listo para la ejecución.
+
+	Recibe SqlExecSingle (SqlExecSingle) listas  para  ser ejecutadas.
+	Retorna un puntero a la transacción creada o bien el error si es que existiera
+	Parámetros
+		* s {...*Transaction}: array de transacciones ya procesadas, listas para su ejecución
+	Return
+		- (*Transaction,) retorna puntero *Transaction, si existe algún error
+*/
+func (sq *SqlExecMultiple) SetSqlSingle(s SqlExecSingle) (*Transaction, error) {
+	key := len(sq.transaction)
+	if s.action == "" {
+		return nil, errors.New("datos de " + s.schema.GetTableName() + " aun no han sido procesados")
+	}
+	sq.transaction = append(sq.transaction, &Transaction{
+		ob:     s.ob,
+		data:   s.data,
+		schema: s.schema,
+		action: s.action,
+	})
+	return sq.transaction[key], nil
+}
+
+/*
 *
 Ejecuta el query
 
@@ -227,6 +291,7 @@ func (sq *SqlExecMultiple) Exec(params ...bool) error {
 				}
 			}
 			valuesExec := item["valuesExec"].([]interface{})
+			// fmt.Println(sqlPre, valuesExec)
 			_, err := tx.Exec(sqlPre, valuesExec...)
 			if err != nil {
 				tx.Rollback()

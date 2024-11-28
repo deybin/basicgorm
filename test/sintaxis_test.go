@@ -199,6 +199,32 @@ func TestQueryStringFull(t *testing.T) {
 		t.Errorf("Se esperaba: %v, pero se obtuvo %v", result, r)
 	}
 }
+func TestQueryStringFullNex(t *testing.T) {
+	Query := basicgorm.Querys{
+		Table: "requ_clientes as a",
+	}
+	r, err := Query.SetQueryString(`SELECT b.c_prod, b.c_medi, sum(b.s_cant) as s_cant,0 AS action FROM stock_compras a 
+		INNER JOIN stock_comprasDetalle b ON a.id_compr =b.id_compr 
+		WHERE a.k_stad =0 AND n_year =$1  AND  a.c_sucu=$2 AND a.c_alma =$3  AND b.c_prod =$4
+		GROUP BY b.c_prod,b.c_medi,b.s_cant
+		UNION
+		select b.c_prod,b.c_medi,sum(b.s_cant) as s_cant ,1 AS action from stock_ventas a 
+		INNER JOIN stock_ventasDetalle  b ON a.id_venta=b.id_venta  
+		WHERE a.k_stad =0 AND n_year =$5  AND  a.c_sucu=$6 AND a.c_alma =$7  AND b.c_prod =$8
+		GROUP BY b.c_prod,b.c_medi,b.s_cant
+		`, 2024, "001", "001", "0101002", 2024, "001", "001", "0101002").Exec(basicgorm.QConfig{Database: "new_capital"}).All()
+
+	fmt.Println("test query:", Query.GetQuery())
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(r)
+	result := []map[string]interface{}{}
+	if len(result) != 0 {
+		t.Errorf("Se esperaba: %v, pero se obtuvo %v", result, r)
+	}
+}
 
 func TestQueryStringFull_plpgsql(t *testing.T) {
 	Query := basicgorm.Querys{}
