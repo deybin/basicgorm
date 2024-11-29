@@ -249,6 +249,7 @@ func (sq *SqlExecMultiple) SetSqlSingle(s SqlExecSingle) (*Transaction, error) {
 		data:   s.data,
 		schema: s.schema,
 		action: s.action,
+		query:  s.query,
 	})
 	return sq.transaction[key], nil
 }
